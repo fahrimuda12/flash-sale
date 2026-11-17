@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261118000101-create-orders-table" author="fahri">
+        <!-- Orders Table -->
+        <createTable tableName="orders">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_number" type="VARCHAR(64)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="customer_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="customer_email" type="VARCHAR(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_amount" type="DECIMAL(15, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount_amount" type="DECIMAL(15, 2)" defaultValueNumeric="0.00">
+                <constraints nullable="false"/>
+            </column>
+            <column name="final_amount" type="DECIMAL(15, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="voucher_code" type="VARCHAR(50)"/>
+            <column name="status" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_method" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <createIndex indexName="idx_orders_customer_id" tableName="orders">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex indexName="idx_orders_created_at" tableName="orders">
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex indexName="idx_orders_status" tableName="orders">
+            <column name="status"/>
+        </createIndex>
+
+        <!-- Order Items Table -->
+        <createTable tableName="order_items">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_order_items_order" references="orders(id)"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="VARCHAR(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="DECIMAL(15, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subtotal" type="DECIMAL(15, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <createIndex indexName="idx_order_items_order_id" tableName="order_items">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex indexName="idx_order_items_product_id" tableName="order_items">
+            <column name="product_id"/>
+        </createIndex>
+        <createIndex indexName="idx_order_items_category" tableName="order_items">
+            <column name="category"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

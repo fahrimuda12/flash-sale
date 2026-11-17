@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261118000201-seed-orders-data" author="fahri">
+        <!-- Seed Orders -->
+        <insert tableName="orders">
+            <column name="id" valueNumeric="1"/>
+            <column name="order_number" value="ORD-20261118-0001"/>
+            <column name="customer_id" valueNumeric="101"/>
+            <column name="customer_email" value="alex.tan@example.com"/>
+            <column name="total_amount" valueNumeric="25000000.00"/>
+            <column name="discount_amount" valueNumeric="2500000.00"/>
+            <column name="final_amount" valueNumeric="22500000.00"/>
+            <column name="voucher_code" value="FLASHSALE10"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="VIRTUAL_ACCOUNT"/>
+            <column name="created_at" valueDate="2026-11-18T00:01:15"/>
+            <column name="updated_at" valueDate="2026-11-18T00:01:20"/>
+        </insert>
+
+        <insert tableName="orders">
+            <column name="id" valueNumeric="2"/>
+            <column name="order_number" value="ORD-20261118-0002"/>
+            <column name="customer_id" valueNumeric="102"/>
+            <column name="customer_email" value="sarah.connor@example.com"/>
+            <column name="total_amount" valueNumeric="18500000.00"/>
+            <column name="discount_amount" valueNumeric="1000000.00"/>
+            <column name="final_amount" valueNumeric="17500000.00"/>
+            <column name="voucher_code" value="DISCOUNT50K"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="CREDIT_CARD"/>
+            <column name="created_at" valueDate="2026-11-18T00:02:40"/>
+            <column name="updated_at" valueDate="2026-11-18T00:02:45"/>
+        </insert>
+
+        <insert tableName="orders">
+            <column name="id" valueNumeric="3"/>
+            <column name="order_number" value="ORD-20261118-0003"/>
+            <column name="customer_id" valueNumeric="101"/>
+            <column name="customer_email" value="alex.tan@example.com"/>
+            <column name="total_amount" valueNumeric="3500000.00"/>
+            <column name="discount_amount" valueNumeric="350000.00"/>
+            <column name="final_amount" valueNumeric="3150000.00"/>
+            <column name="voucher_code" value="FLASHSALE10"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="QRIS"/>
+            <column name="created_at" valueDate="2026-11-18T00:05:10"/>
+            <column name="updated_at" valueDate="2026-11-18T00:05:15"/>
+        </insert>
+
+        <insert tableName="orders">
+            <column name="id" valueNumeric="4"/>
+            <column name="order_number" value="ORD-20261118-0004"/>
+            <column name="customer_id" valueNumeric="103"/>
+            <column name="customer_email" value="bruce.wayne@example.com"/>
+            <column name="total_amount" valueNumeric="48000000.00"/>
+            <column name="discount_amount" valueNumeric="5000000.00"/>
+            <column name="final_amount" valueNumeric="43000000.00"/>
+            <column name="voucher_code" value="VIPCASHBACK"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="VIRTUAL_ACCOUNT"/>
+            <column name="created_at" valueDate="2026-11-18T00:10:22"/>
+            <column name="updated_at" valueDate="2026-11-18T00:10:28"/>
+        </insert>
+
+        <insert tableName="orders">
+            <column name="id" valueNumeric="5"/>
+            <column name="order_number" value="ORD-20261118-0005"/>
+            <column name="customer_id" valueNumeric="104"/>
+            <column name="customer_email" value="diana.prince@example.com"/>
+            <column name="total_amount" valueNumeric="8900000.00"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="final_amount" valueNumeric="8900000.00"/>
+            <column name="status" value="CONFIRMED"/>
+            <column name="payment_method" value="DIRECT_DEBIT"/>
+            <column name="created_at" valueDate="2026-11-18T00:15:45"/>
+            <column name="updated_at" valueDate="2026-11-18T00:15:50"/>
+        </insert>
+
+        <!-- Seed Order Items -->
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="1"/>
+            <column name="order_id" valueNumeric="1"/>
+            <column name="product_id" valueNumeric="1"/>
+            <column name="product_name" value="Flagship Smartphone Pro 256GB"/>
+            <column name="category" value="Electronics"/>
+            <column name="price" valueNumeric="15000000.00"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="subtotal" valueNumeric="15000000.00"/>
+            <column name="created_at" valueDate="2026-11-18T00:01:15"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="2"/>
+            <column name="order_id" valueNumeric="1"/>
+            <column name="product_id" valueNumeric="3"/>
+            <column name="product_name" value="Wireless Noise Cancelling Headphones"/>
+            <column name="category" value="Accessories"/>
+            <column name="price" valueNumeric="5000000.00"/>
+            <column name="quantity" valueNumeric="2"/>
+            <column name="subtotal" valueNumeric="10000000.00"/>
+            <column name="created_at" valueDate="2026-11-18T00:01:15"/>
+        </insert>
+
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="2"/>
+            <column name="order_id" valueNumeric="2"/>
+            <column name="product_id" valueNumeric="2"/>
+            <column name="product_name" value="Ultra Thin Laptop 14 inch"/>
+            <column name="category" value="Electronics"/>
+            <column name="price" valueNumeric="18500000.00"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="subtotal" valueNumeric="18500000.00"/>
+            <column name="created_at" valueDate="2026-11-18T00:02:40"/>
+        </insert>
+
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="4"/>
+            <column name="order_id" valueNumeric="3"/>
+            <column name="product_id" valueNumeric="4"/>
+            <column name="product_name" value="Mechanical Gaming Keyboard"/>
+            <column name="category" value="Gaming"/>
+            <column name="price" valueNumeric="1750000.00"/>
+            <column name="quantity" valueNumeric="2"/>
+            <column name="subtotal" valueNumeric="3500000.00"/>
+            <column name="created_at" valueDate="2026-11-18T00:05:10"/>
+        </insert>
+
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="5"/>
+            <column name="order_id" valueNumeric="4"/>
+            <column name="product_id" valueNumeric="5"/>
+            <column name="product_name" value="Gaming Console Next Gen"/>
+            <column name="category" value="Gaming"/>
+            <column name="price" valueNumeric="9500000.00"/>
+            <column name="quantity" valueNumeric="2"/>
+            <column name="subtotal" valueNumeric="19000000.00"/>
+            <column name="created_at" valueDate="2026-11-18T00:10:22"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="6"/>
+            <column name="order_id" valueNumeric="4"/>
+            <column name="product_id" valueNumeric="6"/>
+            <column name="product_name" value="OLED 4K 144Hz Gaming Monitor 32 inch"/>
+            <column name="category" value="Electronics"/>
+            <column name="price" valueNumeric="14500000.00"/>
+            <column name="quantity" valueNumeric="2"/>
+            <column name="subtotal" valueNumeric="29000000.00"/>
+            <column name="created_at" valueDate="2026-11-18T00:10:22"/>
+        </insert>
+
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="7"/>
+            <column name="order_id" valueNumeric="5"/>
+            <column name="product_id" valueNumeric="7"/>
+            <column name="product_name" value="Smartwatch Titanium Edition"/>
+            <column name="category" value="Wearables"/>
+            <column name="price" valueNumeric="8900000.00"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="subtotal" valueNumeric="8900000.00"/>
+            <column name="created_at" valueDate="2026-11-18T00:15:45"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
