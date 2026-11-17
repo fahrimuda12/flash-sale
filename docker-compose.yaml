@@ -145,6 +145,86 @@ services:
     networks:
       - flashsale-network
 
+  # ============================================================================
+  # 7. Product Microservice
+  # ============================================================================
+  product-service:
+    build:
+      context: ./product
+      dockerfile: Dockerfile
+    container_name: flashsale-product-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/product
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/audit
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - flashsale-network
+    profiles:
+      - services
+
+  # ============================================================================
+  # 8. Order Microservice
+  # ============================================================================
+  order-service:
+    build:
+      context: ./order
+      dockerfile: Dockerfile
+    container_name: flashsale-order-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-order:5432/order
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/audit
+    depends_on:
+      postgres-order:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - flashsale-network
+    profiles:
+      - services
+
+  # ============================================================================
+  # 9. Audit Microservice
+  # ============================================================================
+  audit-service:
+    build:
+      context: ./audit
+      dockerfile: Dockerfile
+    container_name: flashsale-audit-service
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/audit
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      mongodb:
+        condition: service_started
+      kafka:
+        condition: service_started
+    networks:
+      - flashsale-network
+    profiles:
+      - services
+
 networks:
   flashsale-network:
     name: flashsale-network
