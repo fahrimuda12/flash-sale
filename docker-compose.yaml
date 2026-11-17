@@ -1,6 +1,6 @@
 services:
   # ============================================================================
-  # 1. PostgreSQL (RDBMS for Orders, Ledger, and Native SQL Queries)
+  # 1. PostgreSQL (RDBMS for Products)
   # ============================================================================
   postgres:
     image: postgres:16-alpine
@@ -17,7 +17,30 @@ services:
     networks:
       - flashsale-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d flashsale"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d product"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # 1b. PostgreSQL (RDBMS for Orders & Native SQL Query Analytics)
+  # ============================================================================
+  postgres-order:
+    image: postgres:16-alpine
+    container_name: flashsale-postgres-order
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: order
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_order_data:/var/lib/postgresql/data
+    networks:
+      - flashsale-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d order"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -129,6 +152,7 @@ networks:
 
 volumes:
   postgres_data:
+  postgres_order_data:
   redis_data:
   kafka_data:
   es_data:
