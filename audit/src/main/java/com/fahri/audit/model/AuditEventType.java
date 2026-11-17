@@ -1,0 +1,16 @@
+package com.fahri.audit.model;
+
+public enum AuditEventType {
+    ORDER_CREATED,
+    ORDER_PAID,
+    ORDER_CANCELLED,
+    ORDER_FAILED,
+    STOCK_RESERVED,
+    STOCK_DEDUCTED,
+    STOCK_RESTORED,
+    PRODUCT_CREATED,
+    PRODUCT_UPDATED,
+    FLASH_SALE_CLICK,
+    SECURITY_ALERT,
+    SYSTEM_EVENT
+}
