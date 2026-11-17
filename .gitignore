@@ -1,23 +1,80 @@
-HELP.md
+### Compiled Class Files & Packages ###
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+### Build Directories & Tooling ###
 target/
-.mvn/wrapper/maven-wrapper.jar
+**/target/
 !**/src/main/**/target/
 !**/src/test/**/target/
+build/
+**/build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+.gradle/
+out/
+**/out/
 
-### STS ###
+### Maven Wrapper ###
+.mvn/wrapper/maven-wrapper.jar
+**/.mvn/wrapper/maven-wrapper.jar
+
+### Documentation & Crash Dumps ###
+HELP.md
+**/HELP.md
+hs_err_pid*
+replay_pid*
+
+### Logs & Temp Files ###
+*.log
+logs/
+**/logs/
+*.tmp
+*.bak
+*.swp
+*~
+
+### Environment & Secret Configurations ###
+.env
+.env.local
+.env.*.local
+application-local.properties
+application-local.yml
+application-local.yaml
+docker-compose.override.yml
+docker-compose.override.yaml
+
+### Docker Volumes / Local Data Dumps ###
+postgres_data/
+redis_data/
+kafka_data/
+es_data/
+mongo_data/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### Visual Studio Code ###
+.vscode/
+*.code-workspace
+
+### Eclipse / STS ###
 .apt_generated
 .classpath
 .factorypath
 .project
-.settings
+.settings/
 .springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
+.sts4-cache/
 
 ### NetBeans ###
 /nbproject/private/
@@ -25,9 +82,22 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+### Operating System Files ###
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.fuse_hidden*
+.directory
