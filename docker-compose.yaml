@@ -116,7 +116,7 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_DATABASE: flashsale_audit
+      MONGO_INITDB_DATABASE: audit
     volumes:
       - mongo_data:/data/db
     networks:
