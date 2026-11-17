@@ -1,4 +1,4 @@
-package com.fahri.flashsale.entity;
+package com.fahri.product.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
