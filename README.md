@@ -202,8 +202,6 @@ curl -X POST http://localhost:8081/api/products \
 ```bash
 curl -X GET http://localhost:8081/api/products/1
 ```
-*Note: This automatically warms up the Redis cache key `product:stock:1` with value `20` on read-through.*
-
 ---
 
 ### Step 3: Checkout an Order (Order Service)
@@ -244,8 +242,6 @@ curl -X POST http://localhost:8082/api/orders/checkout \
 ```bash
 curl -X GET http://localhost:8081/api/products/1
 ```
-*Response shows `stock: 18`.*
-
 ---
 
 ### Step 5: Test Advanced Native SQL Analytics (Order Service)
