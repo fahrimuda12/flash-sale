@@ -21,13 +21,6 @@ import org.springframework.util.backoff.FixedBackOff;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Kafka Configuration for Stream-Based Order Processing:
- * - Uses standard Apache Kafka StringSerializer and StringDeserializer.
- * - Outbound and inbound JSON payload conversion is powered by Spring Kafka 4.0's
- *   StringJacksonJsonMessageConverter (replacing deprecated StringJsonMessageConverter).
- * - Configures resilient error handler with retries and backoff.
- */
 @Configuration
 @EnableKafka
 public class KafkaConfig {
