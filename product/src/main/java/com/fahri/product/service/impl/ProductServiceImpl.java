@@ -31,6 +31,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final AuditProducer auditProducer;
+    private final com.fahri.product.service.ProductSearchService productSearchService;
 
     private static final String REDIS_STOCK_PREFIX = "product:stock:";
 
@@ -75,12 +76,18 @@ public class ProductServiceImpl implements ProductService {
 
         Product savedProduct = productRepository.save(product);
 
-        // Sync initial stock into Redis Data Grid
         if (savedProduct.getId() != null && savedProduct.getStock() != null) {
             redisTemplate.opsForValue().set(REDIS_STOCK_PREFIX + savedProduct.getId(), savedProduct.getStock());
         }
 
-        // Publish Audit Event for Product Creation
+        productSearchService.indexProduct(savedProduct);
+
+        publishAuditCreate(savedProduct);
+
+        return ProductResponse.fromEntity(savedProduct);
+    }
+
+    private void publishAuditCreate(Product savedProduct) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("productId", savedProduct.getId());
         payload.put("name", savedProduct.getName());
@@ -89,8 +96,6 @@ public class ProductServiceImpl implements ProductService {
         payload.put("category", savedProduct.getCategory());
         auditProducer.logActivity("PRODUCT_CREATED", "CREATE_PRODUCT", "Product",
                 String.valueOf(savedProduct.getId()), "SUCCESS", null, payload);
-
-        return ProductResponse.fromEntity(savedProduct);
     }
 
     private ProductResponse mapAndSyncWithRedis(Product product) {
@@ -168,6 +173,9 @@ public class ProductServiceImpl implements ProductService {
             } catch (Exception ex) {
                 log.debug("Redis stock decrement sync skipped: {}", ex.getMessage());
             }
+
+            // Sync updated stock to Elasticsearch
+            productRepository.findById(productId).ifPresent(productSearchService::indexProduct);
 
             log.info("Successfully decreased stock by {} for product id: {} (order: {})", quantity, productId, orderNumber);
         }

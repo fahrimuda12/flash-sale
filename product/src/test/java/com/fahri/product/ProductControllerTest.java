@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -35,6 +36,9 @@ class ProductControllerTest {
 
     @Mock
     private ProductService productService;
+
+    @Mock
+    private com.fahri.product.service.ProductSearchService productSearchService;
 
     @InjectMocks
     private ProductController productController;
@@ -110,5 +114,46 @@ class ProductControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("Flash Sale Smartphone"));
+    }
+
+    @Test
+    @DisplayName("GET /api/products/search should execute Elasticsearch search and return results")
+    void testSearchProducts_Success() throws Exception {
+        com.fahri.product.document.ProductSearchDocument doc = com.fahri.product.document.ProductSearchDocument.builder()
+                .id("1")
+                .name("iPhone 15 Pro")
+                .description("Titanium smartphone")
+                .price(BigDecimal.valueOf(18000000))
+                .stock(25)
+                .category("Smartphone")
+                .build();
+
+        org.springframework.data.domain.Page<com.fahri.product.document.ProductSearchDocument> searchPage =
+                new org.springframework.data.domain.PageImpl<>(List.of(doc));
+
+        when(productSearchService.searchProducts(any(), any(), any(), any(), any()))
+                .thenReturn(searchPage);
+
+        mockMvc.perform(get("/api/products/search")
+                        .param("keyword", "iPhone")
+                        .param("category", "Smartphone")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value("1"))
+                .andExpect(jsonPath("$.content[0].name").value("iPhone 15 Pro"))
+                .andExpect(jsonPath("$.content[0].category").value("Smartphone"));
+    }
+
+    @Test
+    @DisplayName("POST /api/products/search/sync should trigger database to ES synchronization")
+    void testSyncElasticsearch_Success() throws Exception {
+        when(productSearchService.syncAllFromDatabase())
+                .thenReturn(Map.of("status", "SUCCESS", "totalSynced", 100));
+
+        mockMvc.perform(post("/api/products/search/sync")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SUCCESS"))
+                .andExpect(jsonPath("$.totalSynced").value(100));
     }
 }
