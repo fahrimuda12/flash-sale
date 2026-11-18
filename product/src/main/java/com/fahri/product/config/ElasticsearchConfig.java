@@ -1,5 +1,6 @@
 package com.fahri.product.config;
 
+import co.elastic.clients.transport.TransportOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
@@ -13,14 +14,16 @@ import java.time.Duration;
 @EnableElasticsearchRepositories(basePackages = "com.fahri.product.repository")
 public class ElasticsearchConfig extends ElasticsearchConfiguration {
 
+    private static final String ES_COMPATIBILITY_HEADER = "application/vnd.elasticsearch+json;compatible-with=8";
+
     @Value("${spring.elasticsearch.uris:localhost:9200}")
     private String elasticsearchUris;
 
     @Override
     public ClientConfiguration clientConfiguration() {
-        HttpHeaders defaultHeaders = new HttpHeaders();
-        defaultHeaders.add("Accept", "application/vnd.elasticsearch+json;compatible-with=8");
-        defaultHeaders.add("Content-Type", "application/vnd.elasticsearch+json;compatible-with=8");
+        HttpHeaders compatibilityHeaders = new HttpHeaders();
+        compatibilityHeaders.add("Accept", ES_COMPATIBILITY_HEADER);
+        compatibilityHeaders.add("Content-Type", ES_COMPATIBILITY_HEADER);
 
         String hostAndPort = elasticsearchUris
                 .replace("http://", "")
@@ -31,7 +34,16 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
                 .connectedTo(hostAndPort)
                 .withConnectTimeout(Duration.ofSeconds(5))
                 .withSocketTimeout(Duration.ofSeconds(5))
-                .withDefaultHeaders(defaultHeaders)
+                .withHeaders(() -> compatibilityHeaders)
+                .withDefaultHeaders(compatibilityHeaders)
+                .build();
+    }
+
+    @Override
+    public TransportOptions transportOptions() {
+        return super.transportOptions().toBuilder()
+                .setHeader("Accept", ES_COMPATIBILITY_HEADER)
+                .setHeader("Content-Type", ES_COMPATIBILITY_HEADER)
                 .build();
     }
 }
