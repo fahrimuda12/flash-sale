@@ -17,11 +17,12 @@ FROM eclipse-temurin:21-jre-alpine AS runner
 WORKDIR /app
 
 # Create unprivileged application user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
+RUN addgroup -g 1001 -S appgroup && adduser -u 1001 -S appuser -G appgroup
 
-# Copy JAR from build stage
-COPY --from=builder /app/target/*.jar app.jar
+# Copy JAR from build stage with explicit ownership
+COPY --chown=1001:1001 --from=builder /app/target/*.jar app.jar
+
+USER 1001:1001
 
 EXPOSE 8083
 
