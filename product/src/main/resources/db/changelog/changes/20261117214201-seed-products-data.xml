@@ -83,4 +83,11 @@
         </insert>
     </changeSet>
 
+    <!-- Synchronize PostgreSQL sequence after seeding -->
+    <changeSet id="20261117214203-sync-product-sequence" author="fahri">
+        <sql>
+            SELECT setval(pg_get_serial_sequence('products', 'id'), (SELECT COALESCE(MAX(id), 1) FROM products));
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

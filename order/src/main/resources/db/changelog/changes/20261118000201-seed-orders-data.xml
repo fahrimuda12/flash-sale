@@ -168,4 +168,12 @@
         </insert>
     </changeSet>
 
+    <!-- Synchronize PostgreSQL identity/serial sequence after seeding hardcoded IDs -->
+    <changeSet id="20261118000202-sync-order-sequences" author="fahri">
+        <sql>
+            SELECT setval(pg_get_serial_sequence('orders', 'id'), (SELECT COALESCE(MAX(id), 1) FROM orders));
+            SELECT setval(pg_get_serial_sequence('order_items', 'id'), (SELECT COALESCE(MAX(id), 1) FROM order_items));
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>
