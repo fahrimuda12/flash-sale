@@ -1,5 +1,6 @@
 package com.fahri.order.config;
 
+import co.elastic.clients.transport.TransportOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
@@ -11,14 +12,16 @@ import java.time.Duration;
 @Configuration
 public class ElasticsearchConfig extends ElasticsearchConfiguration {
 
+    private static final String ES_COMPATIBILITY_HEADER = "application/vnd.elasticsearch+json;compatible-with=8";
+
     @Value("${spring.elasticsearch.uris:localhost:9200}")
     private String elasticsearchUris;
 
     @Override
     public ClientConfiguration clientConfiguration() {
         HttpHeaders compatibilityHeaders = new HttpHeaders();
-        compatibilityHeaders.add("Accept", "application/vnd.elasticsearch+json;compatible-with=8");
-        compatibilityHeaders.add("Content-Type", "application/vnd.elasticsearch+json;compatible-with=8");
+        compatibilityHeaders.add("Accept", ES_COMPATIBILITY_HEADER);
+        compatibilityHeaders.add("Content-Type", ES_COMPATIBILITY_HEADER);
 
         String hostAndPort = elasticsearchUris
                 .replace("http://", "")
@@ -31,6 +34,14 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
                 .withSocketTimeout(Duration.ofSeconds(5))
                 .withHeaders(() -> compatibilityHeaders)
                 .withDefaultHeaders(compatibilityHeaders)
+                .build();
+    }
+
+    @Override
+    public TransportOptions transportOptions() {
+        return super.transportOptions().toBuilder()
+                .setHeader("Accept", ES_COMPATIBILITY_HEADER)
+                .setHeader("Content-Type", ES_COMPATIBILITY_HEADER)
                 .build();
     }
 }

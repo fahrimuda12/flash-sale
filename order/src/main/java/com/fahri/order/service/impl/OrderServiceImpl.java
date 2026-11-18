@@ -50,7 +50,6 @@ public class OrderServiceImpl implements OrderService {
             stockService.acquireIdempotencyLock(request.getIdempotencyKey(), Duration.ofMinutes(5));
         }
 
-        // Enrich items with catalog details (price, name, category) if omitted by client
         enrichProductDetails(request.getItems());
 
         BigDecimal totalSubtotal = request.getItems().stream()
