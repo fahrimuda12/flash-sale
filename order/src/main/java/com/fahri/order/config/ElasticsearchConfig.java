@@ -5,11 +5,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration;
+import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.data.elasticsearch.support.HttpHeaders;
 
 import java.time.Duration;
 
 @Configuration
+@EnableElasticsearchRepositories(basePackages = "com.fahri.order.repository")
 public class ElasticsearchConfig extends ElasticsearchConfiguration {
 
     private static final String ES_COMPATIBILITY_HEADER = "application/vnd.elasticsearch+json;compatible-with=8";

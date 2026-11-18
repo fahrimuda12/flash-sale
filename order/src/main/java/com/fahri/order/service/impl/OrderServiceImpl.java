@@ -6,6 +6,7 @@ import com.fahri.order.dto.*;
 import com.fahri.order.entity.Order;
 import com.fahri.order.entity.OrderItem;
 import com.fahri.order.entity.OrderStatus;
+import com.fahri.order.exception.OrderNotFoundException;
 import com.fahri.order.queue.dto.ItemDetailEvent;
 import com.fahri.order.queue.dto.OrderPlacedEvent;
 import com.fahri.order.queue.OrderEventProducer;
@@ -156,6 +157,47 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         orderEventProducer.publishOrderPlaced(event);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderResponse getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + id));
+        return OrderResponse.fromEntity(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderResponse getOrderByOrderNumber(String orderNumber) {
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with order number: " + orderNumber));
+        return OrderResponse.fromEntity(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getAllOrders() {
+        return orderRepository.findAll().stream()
+                .map(OrderResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TopCustomerResponse> getTopSpenders(int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 100));
+        return orderRepository.findTopSpendersNative(safeLimit).stream()
+                .map(TopCustomerResponse::fromProjection)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HourlySalesTrendResponse> getHourlySalesTrends() {
+        return orderRepository.findHourlySalesTrendsNative().stream()
+                .map(HourlySalesTrendResponse::fromProjection)
+                .collect(Collectors.toList());
     }
 
     private static @NonNull String setOrderNumber() {
