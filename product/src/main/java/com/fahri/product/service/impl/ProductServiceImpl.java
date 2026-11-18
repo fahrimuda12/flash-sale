@@ -5,6 +5,7 @@ import com.fahri.product.dto.ProductResponse;
 import com.fahri.product.entity.Product;
 import com.fahri.product.exception.InsufficientStockException;
 import com.fahri.product.exception.NotFoundException;
+import com.fahri.product.queue.AuditProducer;
 import com.fahri.product.queue.dto.OrderItemEvent;
 import com.fahri.product.repository.ProductRepository;
 import com.fahri.product.service.ProductService;
@@ -17,6 +18,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,6 +30,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final AuditProducer auditProducer;
 
     private static final String REDIS_STOCK_PREFIX = "product:stock:";
 
@@ -77,6 +80,16 @@ public class ProductServiceImpl implements ProductService {
             redisTemplate.opsForValue().set(REDIS_STOCK_PREFIX + savedProduct.getId(), savedProduct.getStock());
         }
 
+        // Publish Audit Event for Product Creation
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("productId", savedProduct.getId());
+        payload.put("name", savedProduct.getName());
+        payload.put("price", savedProduct.getPrice());
+        payload.put("stock", savedProduct.getStock());
+        payload.put("category", savedProduct.getCategory());
+        auditProducer.logActivity("PRODUCT_CREATED", "CREATE_PRODUCT", "Product",
+                String.valueOf(savedProduct.getId()), "SUCCESS", null, payload);
+
         return ProductResponse.fromEntity(savedProduct);
     }
 
@@ -89,8 +102,9 @@ public class ProductServiceImpl implements ProductService {
         String redisKey = REDIS_STOCK_PREFIX + product.getId();
         try {
             Object cachedStock = redisTemplate.opsForValue().get(redisKey);
-            if (cachedStock == null) {
+            if (cachedStock == null || (cachedStock instanceof Number num && num.intValue() < 0)) {
                 redisTemplate.opsForValue().set(redisKey, product.getStock());
+                response.setStock(product.getStock());
                 log.debug("Warmed Redis stock key {} with DB value {}", redisKey, product.getStock());
             } else if (cachedStock instanceof Number num) {
                 response.setStock(num.intValue());
@@ -132,17 +146,38 @@ public class ProductServiceImpl implements ProductService {
                 log.error("Stock deduction failed for product [id={}, name={}]. Requested: {}, Available: {}",
                         productId, product.getName(), quantity, product.getStock());
 
-                throw new InsufficientStockException("Insufficient stock for product id " + productId +
-                        " (" + product.getName() + "). Available: " + product.getStock() + ", Requested: " + quantity);
+                String errorMsg = "Insufficient stock for product id " + productId + " (" + product.getName() + "). Available: " + product.getStock() + ", Requested: " + quantity;
+
+                // Publish Audit Event for Stock Failure
+                Map<String, Object> errorPayload = new HashMap<>();
+                errorPayload.put("orderNumber", orderNumber);
+                errorPayload.put("productId", productId);
+                errorPayload.put("productName", product.getName());
+                errorPayload.put("requestedQuantity", quantity);
+                errorPayload.put("availableStock", product.getStock());
+                auditProducer.logActivity("INSUFFICIENT_STOCK", "DECREASE_STOCK_FAILED", "ProductStock",
+                        String.valueOf(productId), "FAILURE", errorMsg, errorPayload);
+
+                throw new InsufficientStockException(errorMsg);
             }
 
             try {
                 redisTemplate.opsForValue().decrement(REDIS_STOCK_PREFIX + productId, quantity);
+                // Evict Spring Cache so subsequent getProductById fetches updated stock
+                redisTemplate.delete("products::" + productId);
             } catch (Exception ex) {
                 log.debug("Redis stock decrement sync skipped: {}", ex.getMessage());
             }
 
             log.info("Successfully decreased stock by {} for product id: {} (order: {})", quantity, productId, orderNumber);
         }
+
+        // Publish Audit Event for Successful Stock Deduction
+        Map<String, Object> successPayload = new HashMap<>();
+        successPayload.put("orderNumber", orderNumber);
+        successPayload.put("itemCount", items.size());
+        successPayload.put("deductedQuantities", productQuantities);
+        auditProducer.logActivity("STOCK_DEDUCTED", "DECREASE_STOCK_SUCCESS", "ProductStock",
+                orderNumber, "SUCCESS", null, successPayload);
     }
 }
