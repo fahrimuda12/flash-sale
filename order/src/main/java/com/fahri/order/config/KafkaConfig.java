@@ -14,8 +14,6 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
-import org.springframework.kafka.support.converter.RecordMessageConverter;
-import org.springframework.kafka.support.converter.StringJacksonJsonMessageConverter;
 import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.HashMap;
@@ -55,17 +53,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public RecordMessageConverter recordMessageConverter() {
-        return new StringJacksonJsonMessageConverter();
-    }
-
-    @Bean
-    public KafkaTemplate<String, Object> kafkaTemplate(
-            ProducerFactory<String, Object> producerFactory,
-            RecordMessageConverter recordMessageConverter) {
-        KafkaTemplate<String, Object> template = new KafkaTemplate<>(producerFactory);
-        template.setMessageConverter(recordMessageConverter);
-        return template;
+    public KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory) {
+        return new KafkaTemplate<>(producerFactory);
     }
 
     @Bean
@@ -83,13 +72,11 @@ public class KafkaConfig {
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
-            ConsumerFactory<String, Object> consumerFactory,
-            RecordMessageConverter recordMessageConverter) {
+            ConsumerFactory<String, Object> consumerFactory) {
 
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
-        factory.setRecordMessageConverter(recordMessageConverter);
         factory.setConcurrency(3);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
 
