@@ -82,6 +82,9 @@ public class OrderServiceImpl implements OrderService {
             for (OrderItemRequest item : reservedItems) {
                 stockService.releaseProductStock(item.getProductId(), item.getQuantity());
             }
+            orderEventProducer.publishAuditEvent("ORDER_FAILED", "RESERVE_STOCK_FAILED",
+                    "CUSTOMER-" + request.getCustomerId(), "FAILURE", ex.getMessage(),
+                    Map.of("customerId", request.getCustomerId(), "itemCount", request.getItems() != null ? request.getItems().size() : 0));
             throw ex;
         }
 
