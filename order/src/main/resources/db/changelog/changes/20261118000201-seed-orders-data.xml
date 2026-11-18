@@ -109,7 +109,7 @@
         </insert>
 
         <insert tableName="order_items">
-            <column name="id" valueNumeric="2"/>
+            <column name="id" valueNumeric="3"/>
             <column name="order_id" valueNumeric="2"/>
             <column name="product_id" valueNumeric="2"/>
             <column name="product_name" value="Ultra Thin Laptop 14 inch"/>
