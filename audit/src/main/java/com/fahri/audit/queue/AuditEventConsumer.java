@@ -61,7 +61,7 @@ public class AuditEventConsumer {
             if (root.has("finalAmount")) payloadMap.put("finalAmount", root.get("finalAmount").asDouble());
             if (root.has("voucherCode")) payloadMap.put("voucherCode", root.get("voucherCode").asText());
             if (root.has("paymentMethod")) payloadMap.put("paymentMethod", root.get("paymentMethod").asText());
-            if (root.has("items")) payloadMap.put("items", root.get("items"));
+            if (root.has("items")) payloadMap.put("items", objectMapper.convertValue(root.get("items"), Object.class));
 
             Map<String, String> metadata = new HashMap<>();
             if (root.has("clientIp")) metadata.put("clientIp", root.get("clientIp").asText());
