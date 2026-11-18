@@ -1,5 +1,8 @@
 package com.fahri.order.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -8,26 +11,18 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
-import org.springframework.kafka.support.converter.RecordMessageConverter;
-import org.springframework.kafka.support.converter.StringJacksonJsonMessageConverter;
 import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Kafka Configuration for Stream-Based Order Processing:
- * - Uses standard Apache Kafka StringSerializer and StringDeserializer.
- * - Outbound and inbound JSON payload conversion is powered by Spring Kafka 4.0's
- *   StringJacksonJsonMessageConverter (replacing deprecated StringJsonMessageConverter).
- * - Configures resilient error handler with retries and backoff.
- */
 @Configuration
 @EnableKafka
 public class KafkaConfig {
@@ -39,6 +34,15 @@ public class KafkaConfig {
 
     @Value("${spring.kafka.consumer.group-id:flashsale-order-group}")
     private String groupId;
+
+    @Bean
+    @Primary
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
 
     @Bean
     public NewTopic orderEventsTopic() {
@@ -62,17 +66,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public RecordMessageConverter recordMessageConverter() {
-        return new StringJacksonJsonMessageConverter();
-    }
-
-    @Bean
-    public KafkaTemplate<String, Object> kafkaTemplate(
-            ProducerFactory<String, Object> producerFactory,
-            RecordMessageConverter recordMessageConverter) {
-        KafkaTemplate<String, Object> template = new KafkaTemplate<>(producerFactory);
-        template.setMessageConverter(recordMessageConverter);
-        return template;
+    public KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory) {
+        return new KafkaTemplate<>(producerFactory);
     }
 
     @Bean
@@ -90,13 +85,11 @@ public class KafkaConfig {
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
-            ConsumerFactory<String, Object> consumerFactory,
-            RecordMessageConverter recordMessageConverter) {
+            ConsumerFactory<String, Object> consumerFactory) {
 
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
-        factory.setRecordMessageConverter(recordMessageConverter);
         factory.setConcurrency(3);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
 

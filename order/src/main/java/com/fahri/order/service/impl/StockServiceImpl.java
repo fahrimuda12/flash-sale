@@ -45,13 +45,11 @@ public class StockServiceImpl implements StockService {
     public void reserveProductStock(Long productId, int quantity) {
         String stockKey = STOCK_KEY_PREFIX + productId;
 
-        // If stock is not yet populated in Redis, pre-initialize a default flash sale buffer
         redisTemplate.opsForValue().setIfAbsent(stockKey, 100);
 
         Long remainingStock = redisTemplate.opsForValue().decrement(stockKey, quantity);
 
         if (remainingStock == null || remainingStock < 0) {
-            // Compensate/Rollback atomic decrement
             redisTemplate.opsForValue().increment(stockKey, quantity);
             log.warn("Flash sale out of stock for productId: {}. Attempted: {}, Remaining: {}", productId, quantity, remainingStock);
             throw new OutOfStockException("Product " + productId + " is out of stock in flash sale campaign.");

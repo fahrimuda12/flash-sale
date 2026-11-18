@@ -1,5 +1,7 @@
 package com.fahri.order.service.impl;
 
+import com.fahri.order.client.ProductServiceClient;
+import com.fahri.order.client.dto.ProductDto;
 import com.fahri.order.dto.*;
 import com.fahri.order.entity.Order;
 import com.fahri.order.entity.OrderItem;
@@ -37,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final StockService stockService;
     private final DiscountStrategyProvider discountStrategyProvider;
     private final OrderEventProducer orderEventProducer;
+    private final ProductServiceClient productServiceClient;
 
     @Override
     @Transactional
@@ -46,6 +49,9 @@ public class OrderServiceImpl implements OrderService {
         if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
             stockService.acquireIdempotencyLock(request.getIdempotencyKey(), Duration.ofMinutes(5));
         }
+
+        // Enrich items with catalog details (price, name, category) if omitted by client
+        enrichProductDetails(request.getItems());
 
         BigDecimal totalSubtotal = request.getItems().stream()
                 .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
@@ -82,6 +88,9 @@ public class OrderServiceImpl implements OrderService {
             for (OrderItemRequest item : reservedItems) {
                 stockService.releaseProductStock(item.getProductId(), item.getQuantity());
             }
+            orderEventProducer.publishAuditEvent("ORDER_FAILED", "RESERVE_STOCK_FAILED",
+                    "CUSTOMER-" + request.getCustomerId(), "FAILURE", ex.getMessage(),
+                    Map.of("customerId", request.getCustomerId(), "itemCount", request.getItems() != null ? request.getItems().size() : 0));
             throw ex;
         }
 
@@ -153,5 +162,26 @@ public class OrderServiceImpl implements OrderService {
     private static @NonNull String setOrderNumber() {
        return "ORD-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
                 + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private void enrichProductDetails(List<OrderItemRequest> items) {
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+
+        for (OrderItemRequest item : items) {
+            if (item.getPrice() == null || item.getProductName() == null || item.getCategory() == null) {
+                ProductDto product = productServiceClient.getProductById(item.getProductId());
+                if (item.getProductName() == null || item.getProductName().isBlank()) {
+                    item.setProductName(product.getName());
+                }
+                if (item.getCategory() == null || item.getCategory().isBlank()) {
+                    item.setCategory(product.getCategory());
+                }
+                if (item.getPrice() == null) {
+                    item.setPrice(product.getPrice());
+                }
+            }
+        }
     }
 }

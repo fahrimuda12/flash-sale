@@ -6,6 +6,9 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="20261118000201-seed-orders-data" author="fahri">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM orders</sqlCheck>
+        </preConditions>
         <!-- Seed Orders -->
         <insert tableName="orders">
             <column name="id" valueNumeric="1"/>
@@ -106,7 +109,7 @@
         </insert>
 
         <insert tableName="order_items">
-            <column name="id" valueNumeric="2"/>
+            <column name="id" valueNumeric="3"/>
             <column name="order_id" valueNumeric="2"/>
             <column name="product_id" valueNumeric="2"/>
             <column name="product_name" value="Ultra Thin Laptop 14 inch"/>
@@ -163,6 +166,14 @@
             <column name="subtotal" valueNumeric="8900000.00"/>
             <column name="created_at" valueDate="2026-11-18T00:15:45"/>
         </insert>
+    </changeSet>
+
+    <!-- Synchronize PostgreSQL identity/serial sequence after seeding hardcoded IDs -->
+    <changeSet id="20261118000202-sync-order-sequences" author="fahri">
+        <sql>
+            SELECT setval(pg_get_serial_sequence('orders', 'id'), (SELECT COALESCE(MAX(id), 1) FROM orders));
+            SELECT setval(pg_get_serial_sequence('order_items', 'id'), (SELECT COALESCE(MAX(id), 1) FROM order_items));
+        </sql>
     </changeSet>
 
 </databaseChangeLog>

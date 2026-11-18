@@ -1,6 +1,6 @@
 services:
   # ============================================================================
-  # 1. PostgreSQL (RDBMS for Products)
+  # 1. PostgreSQL
   # ============================================================================
   postgres:
     image: postgres:16-alpine
@@ -14,33 +14,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
     networks:
       - flashsale-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d product"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  # ============================================================================
-  # 1b. PostgreSQL (RDBMS for Orders & Native SQL Query Analytics)
-  # ============================================================================
-  postgres-order:
-    image: postgres:16-alpine
-    container_name: flashsale-postgres-order
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: order
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres_order_data:/var/lib/postgresql/data
-    networks:
-      - flashsale-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d order"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -157,20 +135,25 @@ services:
     ports:
       - "8081:8081"
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/product
       SPRING_DATA_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
-      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/audit
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      kafka:
+        condition: service_started
     networks:
       - flashsale-network
     profiles:
       - services
+      - product
+      - deploy
+      - dev
 
   # ============================================================================
   # 8. Order Microservice
@@ -184,13 +167,13 @@ services:
     ports:
       - "8082:8082"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-order:5432/order
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/order
       SPRING_DATA_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
-      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/audit
     depends_on:
-      postgres-order:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -200,6 +183,9 @@ services:
       - flashsale-network
     profiles:
       - services
+      - order
+      - deploy
+      - dev
 
   # ============================================================================
   # 9. Audit Microservice
@@ -213,6 +199,7 @@ services:
     ports:
       - "8083:8083"
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/audit
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
@@ -224,6 +211,9 @@ services:
       - flashsale-network
     profiles:
       - services
+      - audit
+      - deploy
+      - dev
 
 networks:
   flashsale-network:
@@ -232,7 +222,6 @@ networks:
 
 volumes:
   postgres_data:
-  postgres_order_data:
   redis_data:
   kafka_data:
   es_data:

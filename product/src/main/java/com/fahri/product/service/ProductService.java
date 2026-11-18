@@ -2,6 +2,7 @@ package com.fahri.product.service;
 
 import com.fahri.product.dto.CreateProductRequest;
 import com.fahri.product.dto.ProductResponse;
+import com.fahri.product.queue.dto.OrderItemEvent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -12,4 +13,5 @@ public interface ProductService {
     Page<ProductResponse> getProductsPaged(Pageable pageable);
     ProductResponse getProductById(Long id);
     ProductResponse createProduct(CreateProductRequest request);
+    void decreaseStockForOrder(String orderNumber, List<OrderItemEvent> items);
 }

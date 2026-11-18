@@ -5,13 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="002-seed-products-data" author="fahri">
+    <changeSet id="20261117214201-seed-products-data" author="fahri">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM products</sqlCheck>
+        </preConditions>
         <insert tableName="products">
             <column name="name" value="Sony PlayStation 5 Slim Digital Edition"/>
             <column name="description" value="Next-gen gaming console with ultra-high speed SSD and ray tracing support."/>
             <column name="price" valueNumeric="7999000.00"/>
             <column name="stock" valueNumeric="50"/>
             <column name="category" value="Gaming"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
         <insert tableName="products">
             <column name="name" value="Apple iPhone 15 Pro 128GB - Natural Titanium"/>
@@ -19,6 +24,8 @@
             <column name="price" valueNumeric="18499000.00"/>
             <column name="stock" valueNumeric="25"/>
             <column name="category" value="Smartphone"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
         <insert tableName="products">
             <column name="name" value="Samsung Galaxy S24 Ultra 256GB - Titanium Gray"/>
@@ -26,6 +33,8 @@
             <column name="price" valueNumeric="19999000.00"/>
             <column name="stock" valueNumeric="30"/>
             <column name="category" value="Smartphone"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
         <insert tableName="products">
             <column name="name" value="Sony WH-1000XM5 Wireless Noise Canceling Headphones"/>
@@ -33,6 +42,8 @@
             <column name="price" valueNumeric="4799000.00"/>
             <column name="stock" valueNumeric="40"/>
             <column name="category" value="Audio"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
         <insert tableName="products">
             <column name="name" value="Apple MacBook Air 13-inch M3 Chip (16GB, 512GB)"/>
@@ -40,6 +51,8 @@
             <column name="price" valueNumeric="17299000.00"/>
             <column name="stock" valueNumeric="20"/>
             <column name="category" value="Laptop"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
         <insert tableName="products">
             <column name="name" value="Logitech MX Master 3S Wireless Performance Mouse"/>
@@ -47,6 +60,8 @@
             <column name="price" valueNumeric="1499000.00"/>
             <column name="stock" valueNumeric="100"/>
             <column name="category" value="Accessories"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
         <insert tableName="products">
             <column name="name" value="LG UltraGear 27-inch 165Hz QHD Gaming Monitor"/>
@@ -54,6 +69,8 @@
             <column name="price" valueNumeric="3299000.00"/>
             <column name="stock" valueNumeric="35"/>
             <column name="category" value="Monitor"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
         <insert tableName="products">
             <column name="name" value="Garmin Fenix 7 Pro Sapphire Solar GPS Smartwatch"/>
@@ -61,7 +78,16 @@
             <column name="price" valueNumeric="13999000.00"/>
             <column name="stock" valueNumeric="15"/>
             <column name="category" value="Wearable"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
+    </changeSet>
+
+    <!-- Synchronize PostgreSQL sequence after seeding -->
+    <changeSet id="20261117214203-sync-product-sequence" author="fahri">
+        <sql>
+            SELECT setval(pg_get_serial_sequence('products', 'id'), (SELECT COALESCE(MAX(id), 1) FROM products));
+        </sql>
     </changeSet>
 
 </databaseChangeLog>
