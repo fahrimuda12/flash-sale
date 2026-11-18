@@ -183,6 +183,23 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<TopCustomerResponse> getTopSpenders(int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 100));
+        return orderRepository.findTopSpendersNative(safeLimit).stream()
+                .map(TopCustomerResponse::fromProjection)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HourlySalesTrendResponse> getHourlySalesTrends() {
+        return orderRepository.findHourlySalesTrendsNative().stream()
+                .map(HourlySalesTrendResponse::fromProjection)
+                .collect(Collectors.toList());
+    }
+
     private static @NonNull String setOrderNumber() {
        return "ORD-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
                 + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();

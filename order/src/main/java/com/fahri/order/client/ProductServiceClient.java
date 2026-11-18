@@ -1,7 +1,8 @@
 package com.fahri.order.client;
 
 import com.fahri.order.client.dto.ProductDto;
-import com.fahri.order.exception.FlashSaleException;
+import com.fahri.order.exception.ClientErrorException;
+import com.fahri.order.exception.ProductNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -28,15 +29,15 @@ public class ProductServiceClient {
                     .body(ProductDto.class);
 
             if (product == null) {
-                throw new FlashSaleException("Product not found with id: " + productId);
+                throw new ProductNotFoundException("Product not found with id: " + productId);
             }
 
             return product;
-        } catch (FlashSaleException fe) {
+        } catch (ClientErrorException fe) {
             throw fe;
         } catch (Exception e) {
             log.error("Failed to fetch product details from product-service for id {}: {}", productId, e.getMessage());
-            throw new FlashSaleException("Failed to retrieve product details for product id: " + productId);
+            throw new ClientErrorException("Failed to retrieve product details for product id: " + productId);
         }
     }
 }

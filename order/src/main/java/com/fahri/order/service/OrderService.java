@@ -13,4 +13,8 @@ public interface OrderService {
     OrderResponse getOrderByOrderNumber(String orderNumber);
 
     List<OrderResponse> getAllOrders();
+
+    List<TopCustomerResponse> getTopSpenders(int limit);
+
+    List<HourlySalesTrendResponse> getHourlySalesTrends();
 }
