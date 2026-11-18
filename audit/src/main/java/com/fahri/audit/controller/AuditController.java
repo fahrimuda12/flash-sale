@@ -1,10 +1,12 @@
 package com.fahri.audit.controller;
 
+import com.fahri.audit.dto.AuditAnalyticsSummary;
 import com.fahri.audit.dto.AuditEventDto;
 import com.fahri.audit.dto.AuditResponse;
 import com.fahri.audit.dto.AuditSearchRequest;
 import com.fahri.audit.model.AuditEventType;
 import com.fahri.audit.model.AuditStatus;
+import com.fahri.audit.service.AuditAnalyticsService;
 import com.fahri.audit.service.AuditService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/audit")
@@ -25,6 +28,7 @@ import java.util.List;
 public class AuditController {
 
     private final AuditService auditService;
+    private final AuditAnalyticsService auditAnalyticsService;
 
     @PostMapping("/events")
     public ResponseEntity<AuditResponse> getAuditEvents(@Valid @RequestBody AuditEventDto eventDto) {
@@ -73,5 +77,22 @@ public class AuditController {
         PageRequest pageRequest = PageRequest.of(page, size, sort);
 
         return ResponseEntity.ok(auditService.searchAuditLogs(request, pageRequest));
+    }
+
+    @GetMapping("/analytics/summary")
+    public ResponseEntity<AuditAnalyticsSummary> getAnalyticsSummary(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant toDate) {
+        return ResponseEntity.ok(auditAnalyticsService.computeAnalyticsSummary(fromDate, toDate));
+    }
+
+    @GetMapping("/analytics/latency")
+    public ResponseEntity<Map<String, Double>> getAverageLatencyPerService() {
+        return ResponseEntity.ok(auditAnalyticsService.computeAverageLatencyPerService());
+    }
+
+    @GetMapping("/analytics/alerts")
+    public ResponseEntity<List<AuditResponse>> getSecurityAlerts() {
+        return ResponseEntity.ok(auditAnalyticsService.getHighPrioritySecurityAlerts());
     }
 }
