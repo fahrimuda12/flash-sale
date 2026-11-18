@@ -31,4 +31,20 @@ public class OrderController {
         OrderResponse response = orderService.checkout(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @GetMapping
+    public ResponseEntity<java.util.List<OrderResponse>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getOrderById(id));
+    }
+
+    @GetMapping("/number/{orderNumber}")
+    public ResponseEntity<OrderResponse> getOrderByOrderNumber(@PathVariable String orderNumber) {
+        return ResponseEntity.ok(orderService.getOrderByOrderNumber(orderNumber));
+    }
+
 }
