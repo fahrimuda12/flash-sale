@@ -39,6 +39,12 @@ class ProductServiceImplTest {
     @Mock
     private ValueOperations<String, Object> valueOperations;
 
+    @Mock
+    private com.fahri.product.queue.AuditProducer auditProducer;
+
+    @Mock
+    private com.fahri.product.service.ProductSearchService productSearchService;
+
     @InjectMocks
     private ProductServiceImpl productService;
 
@@ -82,6 +88,8 @@ class ProductServiceImplTest {
 
         verify(productRepository).save(any(Product.class));
         verify(valueOperations).set("product:stock:1", 50);
+        verify(auditProducer).logActivity(eq("PRODUCT_CREATED"), any(), any(), any(), any(), any(), any());
+        verify(productSearchService).indexProduct(sampleProduct);
     }
 
     @Test
@@ -149,6 +157,8 @@ class ProductServiceImplTest {
 
         verify(productRepository).decreaseStockAtomic(1L, 2);
         verify(valueOperations).decrement("product:stock:1", 2);
+        verify(redisTemplate).delete("products::1");
+        verify(auditProducer).logActivity(eq("STOCK_DEDUCTED"), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -169,5 +179,6 @@ class ProductServiceImplTest {
 
         verify(productRepository).decreaseStockAtomic(1L, 99);
         verify(valueOperations, never()).decrement(anyString(), anyLong());
+        verify(auditProducer).logActivity(eq("INSUFFICIENT_STOCK"), any(), any(), any(), any(), any(), any());
     }
 }
