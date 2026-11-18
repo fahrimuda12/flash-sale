@@ -16,9 +16,9 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
 
     @Override
     public ClientConfiguration clientConfiguration() {
-        HttpHeaders defaultHeaders = new HttpHeaders();
-        defaultHeaders.add("Accept", "application/vnd.elasticsearch+json;compatible-with=8");
-        defaultHeaders.add("Content-Type", "application/vnd.elasticsearch+json;compatible-with=8");
+        HttpHeaders compatibilityHeaders = new HttpHeaders();
+        compatibilityHeaders.add("Accept", "application/vnd.elasticsearch+json;compatible-with=8");
+        compatibilityHeaders.add("Content-Type", "application/vnd.elasticsearch+json;compatible-with=8");
 
         String hostAndPort = elasticsearchUris
                 .replace("http://", "")
@@ -29,7 +29,8 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
                 .connectedTo(hostAndPort)
                 .withConnectTimeout(Duration.ofSeconds(5))
                 .withSocketTimeout(Duration.ofSeconds(5))
-                .withDefaultHeaders(defaultHeaders)
+                .withHeaders(() -> compatibilityHeaders)
+                .withDefaultHeaders(compatibilityHeaders)
                 .build();
     }
 }
